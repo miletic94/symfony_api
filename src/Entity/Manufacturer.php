@@ -3,10 +3,12 @@
 namespace App\Entity;
 
 use ApiPlatform\Metadata\ApiResource;
+use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
-use Doctrine\ORM\Mapping\Column;
-use Doctrine\ORM\Mapping\Entity;
+use Symfony\Component\Validator\Constraints as Assert;
+
+
 
 /**
  * A manufacturer
@@ -22,21 +24,38 @@ class Manufacturer
     private ?int $id = null;
 
     /** The name of the manufacturer */
-    #[ORM\Column(nullable: false)]
+    #[ORM\Column]
+    #[Assert\NotBlank()]
     private string $name = "";
 
     /** The description of the manufacturer */
-    #[ORM\Column(type: Types::TEXT, nullable: false)]
+    #[ORM\Column(type: Types::TEXT)]
+    #[Assert\NotBlank()]
     private string $description = "";
 
     /** The country code of the manufacturer */
-    #[ORM\Column(length: 3, nullable: false)]
+    #[ORM\Column(length: 3)]
+    #[Assert\NotBlank()]
     private string $countryCode = '';
 
     /** The date that the manufacturer was listed */
-    #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: false)]
+    #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]
+    #[Assert\NotNull()]
+
     private ?\DateTimeInterface $listedDate = null;
 
+    /** @var Product[] Available products from this manufacturer*/
+    #[ORM\OneToMany(
+        targetEntity: "Product",
+        mappedBy: "manufacturer",
+        cascade: ["persist", "remove"]
+    )]
+    private iterable  $products;
+
+    public function __construct()
+    {
+        $this->products = new ArrayCollection();
+    }
 
     /**
      * Get the value of name
@@ -124,5 +143,13 @@ class Manufacturer
     public function getId()
     {
         return $this->id;
+    }
+
+    /**
+     * Get the value of products
+     */
+    public function getProducts()
+    {
+        return $this->products;
     }
 }
