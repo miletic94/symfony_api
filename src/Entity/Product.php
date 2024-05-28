@@ -6,21 +6,28 @@ use ApiPlatform\Doctrine\Orm\Filter\OrderFilter;
 use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
 use ApiPlatform\Metadata\ApiFilter;
 use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Link;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\ORM\Mapping\Entity;
+use Symfony\Component\Serializer\Attribute\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 
 /** A Product */
 #[Entity]
 #[
-    ApiResource(),
+    ApiResource(
+        normalizationContext: ['groups' => ['product.read']],
+        denormalizationContext: ['groups' => ['product.write']]
+    ),
     ApiFilter(
         SearchFilter::class,
         properties: [
             'name' => SearchFilter::STRATEGY_PARTIAL,
             'description' => SearchFilter::STRATEGY_PARTIAL,
-            'manufacturer.countryCode' => SearchFilter::STRATEGY_EXACT
+            'manufacturer.countryCode' => SearchFilter::STRATEGY_EXACT,
+            'manufacturer.id' => SearchFilter::STRATEGY_EXACT
         ]
     ),
     ApiFilter(
@@ -28,6 +35,14 @@ use Symfony\Component\Validator\Constraints as Assert;
         properties: ['listedDate']
     )
 ]
+// TODO: This seems like a bug on API platform end
+#[ApiResource(
+    uriTemplate: 'manufacturers/{id}/products',
+    uriVariables: [
+        'id' => new Link(fromClass: Manufacturer::class, fromProperty: 'products')
+    ],
+    operations: [new GetCollection()]
+)]
 class Product
 {
     /** The product id */
@@ -38,27 +53,43 @@ class Product
 
     /** The product manufacturer part number */
     #[ORM\Column]
-    #[Assert\NotNull()]
+    #[
+        Assert\NotNull,
+        Groups(['product.read', 'product.write'])
+    ]
     private ?string $mpn = null;
 
     /** The product name */
     #[ORM\Column]
-    #[Assert\NotBlank()]
+    #[
+        Assert\NotBlank,
+        Groups(['product.read', 'product.write'])
+    ]
     private string $name = '';
 
     /** The description of the product  */
     #[ORM\Column(type: Types::TEXT)]
-    #[Assert\NotBlank()]
+    #[
+        Assert\NotBlank,
+        Groups(['product.read', 'product.write'])
+    ]
     private string $description = "";
 
     /** The date of the issue of the product*/
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]
-    #[Assert\NotNull()]
+    #[
+        Assert\NotNull,
+        Groups(['product.read'])
+    ]
     private ?\DateTimeInterface $listedDate = null;
 
     /** The manufacturer of the product  */
     #[ORM\ManyToOne(targetEntity: 'Manufacturer', inversedBy: "products")]
-    #[Assert\NotNull()]
+    #[
+        Assert\NotNull,
+        Groups(['product.read'])
+    ]
+
     private ?Manufacturer $manufacturer = null;
 
 

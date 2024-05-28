@@ -5,11 +5,13 @@ namespace App\Entity;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\Link;
 use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Post;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Attribute\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 
 
@@ -25,7 +27,8 @@ use Symfony\Component\Validator\Constraints as Assert;
         new GetCollection(),
         new Post(),
         new Patch()
-    ]
+    ],
+    paginationItemsPerPage: 5
 )]
 class Manufacturer
 {
@@ -36,7 +39,10 @@ class Manufacturer
 
     /** The name of the manufacturer */
     #[ORM\Column]
-    #[Assert\NotBlank()]
+    #[
+        Assert\NotBlank,
+        Groups(['product.read'])
+    ]
     private string $name = "";
 
     /** The description of the manufacturer */
@@ -61,6 +67,9 @@ class Manufacturer
         mappedBy: "manufacturer",
         cascade: ["persist", "remove"]
     )]
+    #[
+        ApiResource
+    ]
     private iterable  $products;
 
     public function __construct()
