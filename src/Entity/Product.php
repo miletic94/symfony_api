@@ -2,6 +2,9 @@
 
 namespace App\Entity;
 
+use ApiPlatform\Doctrine\Orm\Filter\OrderFilter;
+use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
+use ApiPlatform\Metadata\ApiFilter;
 use ApiPlatform\Metadata\ApiResource;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
@@ -10,7 +13,21 @@ use Symfony\Component\Validator\Constraints as Assert;
 
 /** A Product */
 #[Entity]
-#[ApiResource()]
+#[
+    ApiResource(),
+    ApiFilter(
+        SearchFilter::class,
+        properties: [
+            'name' => SearchFilter::STRATEGY_PARTIAL,
+            'description' => SearchFilter::STRATEGY_PARTIAL,
+            'manufacturer.countryCode' => SearchFilter::STRATEGY_EXACT
+        ]
+    ),
+    ApiFilter(
+        OrderFilter::class,
+        properties: ['listedDate']
+    )
+]
 class Product
 {
     /** The product id */
