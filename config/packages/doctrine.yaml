@@ -29,6 +29,8 @@ when@test:
     doctrine:
         dbal:
             # "TEST_TOKEN" is typically set by ParaTest
+            url: mysql://root:root_password@127.0.0.1:3306/symfony_api
+            
             dbname_suffix: '_test%env(default::TEST_TOKEN)%'
 
 when@prod:
