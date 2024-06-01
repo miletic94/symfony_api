@@ -6,8 +6,12 @@ use ApiPlatform\Doctrine\Orm\Filter\OrderFilter;
 use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
 use ApiPlatform\Metadata\ApiFilter;
 use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Delete;
+use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Link;
+use ApiPlatform\Metadata\Patch;
+use ApiPlatform\Metadata\Post;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\ORM\Mapping\Entity;
@@ -19,8 +23,15 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[
     ApiResource(
         normalizationContext: ['groups' => ['product.read']],
-        denormalizationContext: ['groups' => ['product.write']]
+        denormalizationContext: ['groups' => ['product.write']],
     ),
+]
+#[Get]
+#[GetCollection]
+#[Post(security: "is_granted('ROLE_ADMIN')")]
+#[Patch(security: "is_granted('ROLE_USER') and object.getOwner() == user")]
+#[Delete(security: "is_granted('ROLE_ADMIN')", securityMessage: "Product can only be updated by the owner")]
+#[
     ApiFilter(
         SearchFilter::class,
         properties: [
@@ -91,6 +102,12 @@ class Product
     ]
 
     private ?Manufacturer $manufacturer = null;
+
+    #[ORM\ManyToOne(inversedBy: 'products')]
+    #[
+        Groups(['product.read', 'product.write'])
+    ]
+    private ?User $owner = null;
 
 
     /**
@@ -197,6 +214,18 @@ class Product
     public function setManufacturer($manufacturer)
     {
         $this->manufacturer = $manufacturer;
+
+        return $this;
+    }
+
+    public function getOwner(): ?User
+    {
+        return $this->owner;
+    }
+
+    public function setOwner(?User $owner): static
+    {
+        $this->owner = $owner;
 
         return $this;
     }
