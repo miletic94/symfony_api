@@ -56,7 +56,7 @@ class Manufacturer
     private string $countryCode = '';
 
     /** The date that the manufacturer was listed */
-    #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]
+    #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     #[Assert\NotNull()]
 
     private ?\DateTimeInterface $listedDate = null;

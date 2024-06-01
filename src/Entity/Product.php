@@ -76,10 +76,10 @@ class Product
     private string $description = "";
 
     /** The date of the issue of the product*/
-    #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]
+    #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     #[
         Assert\NotNull,
-        Groups(['product.read'])
+        Groups(['product.read', 'product.write'])
     ]
     private ?\DateTimeInterface $listedDate = null;
 
@@ -87,7 +87,7 @@ class Product
     #[ORM\ManyToOne(targetEntity: 'Manufacturer', inversedBy: "products")]
     #[
         Assert\NotNull,
-        Groups(['product.read'])
+        Groups(['product.read', 'product.write'])
     ]
 
     private ?Manufacturer $manufacturer = null;
